@@ -1223,7 +1223,7 @@ class OFConnection (object):
         t = type(ex).__name__
         self.log.exception('Exception handling %s' % (t,))
       else:
-        self.log.error("Unhandled error")
+        self.log.error("switch: Unhandled error")
         self.close()
         return False
 

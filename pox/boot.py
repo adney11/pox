@@ -55,22 +55,26 @@ def _do_import (name):
   Returns its module name if it was loaded or False on failure.
   """
   #TODO: Update to use the Python 3 import facilities
+  #print(f"mydebug: _do_import: called with name: {name}")
 
   def show_fail ():
     traceback.print_exc()
     print("Could not import module:", name)
 
   def do_import2 (base_name, names_to_try):
+    #print(f"mydebug: do_import2: called with base name: {base_name}: names_to_try: {names_to_try}")
+
     if len(names_to_try) == 0:
       print("Module not found:", base_name)
       return False
-
     name = names_to_try.pop(0)
-
+    #print(f"mydebug: do_import2: base_name: {base_name}: names_to_try: {names_to_try}")
+    #print(f"mydebug: do_import2: module i need: {name}")
     if name in sys.modules:
       return name
 
     try:
+      #print(f"mydebug: _do_import: trying to import: {name}")
       __import__(name, level=0)
       return name
     except ModuleNotFoundError as exc:
@@ -84,10 +88,11 @@ def _do_import (name):
       # On the other hand, if the problem is with a dependency, we should
       # print a stack trace so that it can be fixed.
       # Sorting out the two cases is an ugly hack.
-
+      #print(f"mydebug: do_import2: ModuleNotFoundError as exc: name: {name}: exec.name: {exc.name}: name.endswith(exc.name):{name.endswith(exc.name)} ")
       if exc.name and name.endswith(exc.name):
         # It was the one we tried to import itself. (Case 1)
         # If we have other names to try, try them!
+        #print(f"mydebug: do_import2: ModuleNotFoundError: Case 1")
         return do_import2(base_name, names_to_try)
       elif name.endswith(".py"):
         print("Import by filename is not supported.")
@@ -103,15 +108,17 @@ def _do_import (name):
       else:
         # This means we found the module we were looking for, but one
         # of its dependencies was missing.
+        #print(f"mydebug: do_import2: ModuleNotFoundError: Case 2")
         show_fail()
         return False
     except:
       # There was some other sort of exception while trying to load the
       # module.  Just print a trace and call it a day.
+      #print(f"mydebug: do_import2: ModuleNotFoundError: Case 3")
       show_fail()
       return False
 
-  return do_import2(name, ["pox." + name, name])
+  return do_import2(name, [name, "pox." + name])
 
 
 def _do_imports (components):
@@ -123,11 +130,13 @@ def _do_imports (components):
   """
   done = {}
   for name in components:
+    #print(f"mydebug: _do_imports: trying to import: {name}")
     if name in done: continue
     r = _do_import(name)
     if r is False:
       return False
     members = dict(inspect.getmembers(sys.modules[r]))
+    #print(f"mydebug: _do_imports: imported {name}!")
     done[name] = (r,sys.modules[r],members)
 
   return done
@@ -170,7 +179,9 @@ def _do_launch (argv, skip_startup=False):
 
     _pre_startup()
 
+  #print(f"mydebug: _do_launch: component_order: {component_order}")
   modules = _do_imports(n.split("=")[0].split(':')[0] for n in component_order)
+  #print(f"mydebug: _do_launch: modules imported!")
   if modules is False:
     return False
 
@@ -446,6 +457,7 @@ def _post_startup ():
         # Launch a default of_01
         import pox.openflow.of_01
         pox.openflow.of_01.launch()
+        #print(f"mydebug: _post_startup: launched of_01")
     else:
       logging.getLogger("boot").debug("Not launching of_01")
 

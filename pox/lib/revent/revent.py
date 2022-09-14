@@ -188,6 +188,7 @@ def handleEventException (source, event, args, kw, exc_info):
     if hasattr(c, "__class__"): c = c.__class__.__name__
     if isinstance(t, Event): t = t.__class__.__name__
     elif issubclass(t, Event): t = t.__name__
+    #print(f"mydebug: handleEventException called with: c: {c}: event: {t}")
   except:
     pass
   import sys
@@ -242,6 +243,7 @@ class EventMixin (object):
       return self.raiseEvent(event, *args, **kw)
     except ReventError:
       # That's bad...
+      #print("mydebug: raiseEventNoErrors: Got revent error in revent.py")
       raise
     except:
       if handleEventException is not None:
@@ -281,7 +283,7 @@ class EventMixin (object):
     else:
       classCall = False
 
-    #print("raise",event,eventType)
+    #print(f"mydebug: raiseEvent:event: {event}: eventType: {eventType}")
     if (self._eventMixin_events is not True
         and eventType not in self._eventMixin_events):
       raise ReventError("Event %s not defined on object of type %s"

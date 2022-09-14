@@ -130,7 +130,7 @@ def getLogger (name=None, moreFrames=0):
 
 # Working around something (don't remember what)
 log = (lambda : getLogger())()
-
+#log.setLevel(logging.DEBUG)
 from pox.lib.revent import *
 
 # Now use revent's exception hook to put exceptions in event handlers into
@@ -376,6 +376,7 @@ class POXCore (EventMixin):
       signal.signal(signal.SIGHUP, self._signal_handler_SIGHUP)
       if previous != signal.SIG_DFL:
         log.warn('Redefined signal handler for SIGHUP')
+      log.debug("mydebug: _add_signal_handlers success")
     except (AttributeError, ValueError):
       # SIGHUP is not supported on some systems (e.g., Windows)
       log.debug("Didn't install handler for SIGHUP")
@@ -435,7 +436,7 @@ class POXCore (EventMixin):
     return deferral
 
   def _goUp_stage2 (self):
-
+    log.debug("going up stage 2")
     self.raiseEvent(UpEvent())
 
     self._waiter_notify()
@@ -446,6 +447,7 @@ class POXCore (EventMixin):
   def _waiter_notify (self):
     if len(self._waiters):
       waiting_for = set()
+      log.debug(f"self._waiters: {self._waiters}")
       for entry in self._waiters:
         _, name, components, _, _ = entry
         components = [c for c in components if not self.hasComponent(c)]
@@ -491,6 +493,7 @@ class POXCore (EventMixin):
     using its class name as the name.
     """
     #TODO: weak references?
+    #print(f"mydebug: POX CORE: register: name: {name}")
     if component is None:
       component = name
       name = component.__class__.__name__
